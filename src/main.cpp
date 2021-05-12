@@ -1,7 +1,6 @@
-#include "LibraryLoader.h"
+#include "LibraryHelper.hpp"
 
 #include <hybris/common/dlfcn.h>
-#include <hybris/common/hooks.h>
 
 #include <cstring>
 #include <filesystem>
@@ -47,6 +46,8 @@ const char *logs[] = {"INCONNU",   "DÉFAUT",	  "VERBEUX",
 					  "DÉBOGGAGE", "INFORMATION", "AVERTISSEMENT",
 					  "ERREUR",	   "FATAL",		  "SILENCIEUX"};
 
+
+
 std::string byte_2_str(char *bytes, int size) {
 	std::string str;
 	for (int i = 0; i < size; ++i) {
@@ -57,146 +58,81 @@ std::string byte_2_str(char *bytes, int size) {
 	return str;
 }
 
-bool hookedAlwaysTrue(int stub) { return true; }
+bool logEnabledForPriority() { return true; }
 
 void __android_log_write(int prio, const char *tag, const char *text) {
 	printf(">>> Journal d'Android >>> [%s] [%s]: %s\n", logs[prio], tag, text);
-}
-
-int resolveErrorCode(int i) {
-	int i2;
-	int i3;
-	int ab = abs(i);
-	int i4 = (ab >> 24) & 255;
-	int i5 = (ab >> 16) & 255;
-	int i6 = (ab >> 8) & 255;
-	int i7 = ab & 255;
-	if (i4 != 0) {
-		i2 = i4 | 0;
-		i3 = 8;
-	} else {
-		i2 = 0;
-		i3 = 0;
-	}
-	if (i5 != 0) {
-		i2 |= i5 << i3;
-		i3 += 8;
-	}
-	if (i6 != 0) {
-		i2 |= i6 << i3;
-		i3 += 8;
-	}
-	return i7 != 0 ? i2 | (i7 << i3) : i2;
-}
-
-int Sph98paBcz(char *id, int i) {
-	auto orig =
-		(int (*)(char *, int))hybris_dlsym(storeServicesCore, "Sph98paBcz");
-	int ret = orig(id, i);
-	if (ret != 0) {
-		printf("Sph98paBcz a échoué, code %d. \n", resolveErrorCode(ret));
-		fflush(stdout);
-	}
-	return 0;
-}
-
-int bsawCXd() {
-	auto orig = (int (*)())hybris_dlsym(storeServicesCore, "bsawCXd");
-	int ret = orig();
-	if (ret != 0) {
-		printf("bsawCXd a échoué, code %d. \n", resolveErrorCode(ret));
-		fflush(stdout);
-	}
-	return ret;
-}
-
-void *hooks(const char *symbol_name, const char *requester) {
-	if (strcmp(symbol_name, "_ZN13mediaplatform26DebugLogEnabledForPriorityENS_"
-							"11LogPriorityE") == 0) {
-		return (void *)hookedAlwaysTrue;
-	} else if (strcmp(symbol_name, "__android_log_write") == 0) {
-		return (void *)__android_log_write;
-	} else if (strcmp(symbol_name, "Sph98paBcz") == 0) {
-		return (void *)Sph98paBcz;
-	} else if (strcmp(symbol_name, "bsawCXd") == 0) {
-		return (void *)bsawCXd;
-	}
-	return NULL;
-}
-
-void initLibs() {
-	printf("Initialisation des bibliothèques...\n");
 	fflush(stdout);
-	hybris_set_hook_callback(hooks);
-#if __x86_64__
-	ld_android = LibraryLoader::loadLibrary("lib64/ld-android.so");
-	libdl = LibraryLoader::loadLibrary("lib64/libdl.so");
-	libc = LibraryLoader::loadLibrary("lib64/libc.so");
-	cpp_shared = LibraryLoader::loadLibrary("lib64/libc++.so");
-	log = LibraryLoader::loadLibrary("lib64/liblog.so");
-	m = LibraryLoader::loadLibrary("lib64/libm.so");
-	z = LibraryLoader::loadLibrary("lib64/libz.so");
-	android = LibraryLoader::loadLibrary("lib64/libandroid.so");
-	xml2 = LibraryLoader::loadLibrary("lib64/libxml2.so");
-	stdcpp = LibraryLoader::loadLibrary("lib64/libstdc++.so");
-	curl = LibraryLoader::loadLibrary("lib64/libcurl.so");
-	coreAdi = LibraryLoader::loadLibrary("lib64/libCoreADI.so");
-	coreLskd = LibraryLoader::loadLibrary("lib64/libCoreLSKD.so");
-	coreFp = LibraryLoader::loadLibrary("lib64/libCoreFP.so");
-	blocks = LibraryLoader::loadLibrary("lib64/libBlocksRuntime.so");
-	dispatch = LibraryLoader::loadLibrary("lib64/libdispatch.so");
-	icudata = LibraryLoader::loadLibrary("lib64/libicudata_sv_apple.so");
-	icuuc = LibraryLoader::loadLibrary("lib64/libicuuc_sv_apple.so");
-	icui18n = LibraryLoader::loadLibrary("lib64/libicui18n_sv_apple.so");
-	daapkit = LibraryLoader::loadLibrary("lib64/libdaapkit.so");
-	coreFoundation = LibraryLoader::loadLibrary("lib64/libCoreFoundation.so");
-	mediaPlatform = LibraryLoader::loadLibrary("lib64/libmediaplatform.so");
-	storeServicesCore =
-		LibraryLoader::loadLibrary("lib64/libstoreservicescore.so");
-	mediaLibraryCore =
-		LibraryLoader::loadLibrary("lib64/libmedialibrarycore.so");
-	openSLES = LibraryLoader::loadLibrary("lib64/libOpenSLES.so");
-	androidAppMusic = LibraryLoader::loadLibrary("lib64/libandroidappmusic.so");
-#else
-	ld_android = LibraryLoader::loadLibrary("lib32/ld-android.so");
-	libdl = LibraryLoader::loadLibrary("lib32/libdl.so");
-	libc = LibraryLoader::loadLibrary("lib32/libc.so");
-	cpp_shared = LibraryLoader::loadLibrary("lib32/libc++_shared.so");
-	log = LibraryLoader::loadLibrary("lib32/liblog.so");
-	m = LibraryLoader::loadLibrary("lib32/libm.so");
-	z = LibraryLoader::loadLibrary("lib32/libz.so");
-	android = LibraryLoader::loadLibrary("lib32/libandroid.so");
-	xml2 = LibraryLoader::loadLibrary("lib32/libxml2.so");
-	stdcpp = LibraryLoader::loadLibrary("lib32/libstdc++.so");
-	curl = LibraryLoader::loadLibrary("lib32/libcurl.so");
-	coreAdi = LibraryLoader::loadLibrary("lib32/libCoreADI.so");
-	coreLskd = LibraryLoader::loadLibrary("lib32/libCoreLSKD.so");
-	coreFp = LibraryLoader::loadLibrary("lib32/libCoreFP.so");
-	blocks = LibraryLoader::loadLibrary("lib32/libBlocksRuntime.so");
-	dispatch = LibraryLoader::loadLibrary("lib32/libdispatch.so");
-	icudata = LibraryLoader::loadLibrary("lib32/libicudata_sv_apple.so");
-	icuuc = LibraryLoader::loadLibrary("lib32/libicuuc_sv_apple.so");
-	icui18n = LibraryLoader::loadLibrary("lib32/libicui18n_sv_apple.so");
-	daapkit = LibraryLoader::loadLibrary("lib32/libdaapkit.so");
-	coreFoundation = LibraryLoader::loadLibrary("lib32/libCoreFoundation.so");
-	mediaPlatform = LibraryLoader::loadLibrary("lib32/libmediaplatform.so");
-	storeServicesCore =
-		LibraryLoader::loadLibrary("lib32/libstoreservicescore.so");
-	mediaLibraryCore =
-		LibraryLoader::loadLibrary("lib32/libmedialibrarycore.so");
-	openSLES = LibraryLoader::loadLibrary("lib32/libOpenSLES.so");
-	androidAppMusic = LibraryLoader::loadLibrary("lib32/libandroidappmusic.so");
-#endif
+}
 
-	if (!ld_android || !libdl || !libc || !cpp_shared || !log || !m || !z ||
-		!android || !xml2 || !stdcpp || !curl || !coreAdi || !coreLskd ||
-		!coreFp || !blocks || !dispatch || !icudata || !icuuc || !icui18n ||
-		!daapkit || !coreFoundation || !mediaPlatform || !storeServicesCore) {
+inline void checkLibrary(void* handle) {
+	if (!handle) {
 		printf("Certaines bibliothèques n'ont pas pu être chargées, annulation "
 			   "de l'opération.\n");
 		fflush(stdout);
 		exit(-1);
 	}
+}
+
+void initLibs() {
+	LibraryHelper::hook("__android_log_write", (void*) __android_log_write);
+	LibraryHelper::hook("_ZN13mediaplatform26DebugLogEnabledForPriorityENS_11LogPriorityE", (void*) logEnabledForPriority);
+	printf("Initialisation des bibliothèques...\n");
+	fflush(stdout);
+	ld_android = LibraryHelper::loadLibrary("lib32/ld-android.so");
+	checkLibrary(ld_android);
+	libdl = LibraryHelper::loadLibrary("lib32/libdl.so");
+	checkLibrary(libdl);
+	libc = LibraryHelper::loadLibrary("lib32/libc.so");
+	checkLibrary(libc);
+	cpp_shared = LibraryHelper::loadLibrary("lib32/libc++_shared.so");
+	checkLibrary(cpp_shared);
+	log = LibraryHelper::loadLibrary("lib32/liblog.so");
+	checkLibrary(log);
+	m = LibraryHelper::loadLibrary("lib32/libm.so");
+	checkLibrary(m);
+	z = LibraryHelper::loadLibrary("lib32/libz.so");
+	checkLibrary(z);
+	android = LibraryHelper::loadLibrary("lib32/libandroid.so");
+	checkLibrary(android);
+	xml2 = LibraryHelper::loadLibrary("lib32/libxml2.so");
+	checkLibrary(xml2);
+	stdcpp = LibraryHelper::loadLibrary("lib32/libstdc++.so");
+	checkLibrary(stdcpp);
+	curl = LibraryHelper::loadLibrary("lib32/libcurl.so");
+	checkLibrary(curl);
+	coreAdi = LibraryHelper::loadLibrary("lib32/libCoreADI.so");
+	checkLibrary(coreAdi);
+	coreLskd = LibraryHelper::loadLibrary("lib32/libCoreLSKD.so");
+	checkLibrary(coreLskd);
+	coreFp = LibraryHelper::loadLibrary("lib32/libCoreFP.so");
+	checkLibrary(coreFp);
+	blocks = LibraryHelper::loadLibrary("lib32/libBlocksRuntime.so");
+	checkLibrary(blocks);
+	dispatch = LibraryHelper::loadLibrary("lib32/libdispatch.so");
+	checkLibrary(dispatch);
+	icudata = LibraryHelper::loadLibrary("lib32/libicudata_sv_apple.so");
+	checkLibrary(icudata);
+	icuuc = LibraryHelper::loadLibrary("lib32/libicuuc_sv_apple.so");
+	checkLibrary(icuuc);
+	icui18n = LibraryHelper::loadLibrary("lib32/libicui18n_sv_apple.so");
+	checkLibrary(icui18n);
+	daapkit = LibraryHelper::loadLibrary("lib32/libdaapkit.so");
+	checkLibrary(daapkit);
+	coreFoundation = LibraryHelper::loadLibrary("lib32/libCoreFoundation.so");
+	checkLibrary(coreFoundation);
+	mediaPlatform = LibraryHelper::loadLibrary("lib32/libmediaplatform.so");
+	checkLibrary(mediaPlatform);
+	storeServicesCore =
+		LibraryHelper::loadLibrary("lib32/libstoreservicescore.so");
+	checkLibrary(storeServicesCore);
+	mediaLibraryCore =
+		LibraryHelper::loadLibrary("lib32/libmedialibrarycore.so");
+	checkLibrary(mediaLibraryCore);
+	openSLES = LibraryHelper::loadLibrary("lib32/libOpenSLES.so");
+	checkLibrary(openSLES);
+	androidAppMusic = LibraryHelper::loadLibrary("lib32/libandroidappmusic.so");
+	checkLibrary(androidAppMusic);
 
 	printf("Les bibliothèques ont été chargé avec succès !\n");
 	fflush(stdout);
@@ -262,8 +198,8 @@ int main() {
 		str = ":memory:";
 	}
 
-	void *context;
-	(*RequestContext__ctor)(&context, str);
+	void *context[0xff];
+	(*RequestContext__ctor)(context, str);
 
 	printf(" > Génération d'un identifiant unique...\n");
 	fflush(stdout);
@@ -405,15 +341,17 @@ int main() {
 
 	{
 		auto setRequestContextObserver =
-			(void (*)(void *self, std::shared_ptr<void> requestContextObserver))
+			(void (*)(void *self, std::shared_ptr<void*> requestContextObserver))
 				hybris_dlsym(storeServicesCore,
 							 "_ZN17storeservicescore20RequestContextConfig25set"
 							 "RequestContextObserverERKNSt6__ndk110shared_"
 							 "ptrINS_22RequestContextObserverEEE");
-		std::shared_ptr<void> requestContextObserver = NULL;
+		void* requestContextObserver;
+
+
 		setRequestContextObserver(
 			requestContextConfig,
-			requestContextObserver); // À revérifier, pas sûr de mon coup.
+			std::make_shared<void*>(requestContextObserver)); // À revérifier, pas sûr de mon coup.
 	}
 
 	printf("  > Création de l'identifiant de l'appareil (objet natif: "
@@ -516,9 +454,9 @@ int main() {
 					"_ZN13mediaplatform8FilePathC1ERKNSt6__ndk112basic_"
 					"stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE");
 
-			(filePath_ctor)(&filePath[0], home + "/.config/hxsign");
-			(filePath_ctor)(&filePath[1], home + "/.config/hxsign/cache");
-			(filePath_ctor)(&filePath[2], home + "/.config/hxsign");
+			filePath_ctor(&filePath[0], home + "/.config/hxsign");
+			filePath_ctor(&filePath[1], home + "/.config/hxsign/cache");
+			filePath_ctor(&filePath[2], home + "/.config/hxsign");
 
 			{
 				auto contentBundle_ctor = (void (*)(void *self, void *, void *,
@@ -559,17 +497,17 @@ int main() {
 						 "PlayDirectoryPathERKNSt6__ndk112basic_stringIcNS1_"
 						 "11char_traitsIcEENS1_9allocatorIcEEEE");
 		setFairPlayDirectoryPath(requestContextConfig,
-								 "/home/dadoum/.config/hxsign/fairPlay");
+								 home + "/.config/hxsign/fairPlay");
 	}
 
 	{
 		auto RequestContext__init = (void (*)(
-			void *self, std::shared_ptr<void *> const &config))
+			void *self, std::shared_ptr<void *> config))
 			hybris_dlsym(storeServicesCore,
 						 "_ZN17storeservicescore14RequestContext4initERKNSt6__"
 						 "ndk110shared_ptrINS_20RequestContextConfigEEE");
-		auto shared = std::make_shared<void *>(requestContextConfig);
-		RequestContext__init(&context, shared);
+
+		RequestContext__init(context, std::make_shared<void *>(requestContextConfig));
 	}
 
 	cleanup();
