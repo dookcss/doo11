@@ -1,5 +1,3 @@
-#include "LibraryHelper.hpp"
-
 #include <hybris/common/dlfcn.h>
 
 #include <cstring>
@@ -10,33 +8,8 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <NativeLibrary.hpp>
 
-void *ld_android;
-void *libdl;
-void *libc;
-void *cpp_shared;
-void *log;
-void *m;
-void *z;
-void *android;
-void *xml2;
-void *stdcpp;
-void *curl;
-void *coreAdi;
-void *coreLskd;
-void *coreFp;
-void *blocks;
-void *dispatch;
-void *icudata;
-void *icuuc;
-void *icui18n;
-void *daapkit;
-void *coreFoundation;
-void *mediaPlatform;
-void *storeServicesCore;
-void *mediaLibraryCore;
-void *openSLES;
-void *androidAppMusic;
 
 // https://stackoverflow.com/questions/10723403/char-array-to-hex-string-c
 char const hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
@@ -65,124 +38,55 @@ void __android_log_write(int prio, const char *tag, const char *text) {
 	fflush(stdout);
 }
 
-inline void checkLibrary(void* handle) {
-	if (!handle) {
-		printf("Certaines bibliothèques n'ont pas pu être chargées, annulation "
-			   "de l'opération.\n");
-		fflush(stdout);
-		exit(-1);
-	}
-}
-
 void initLibs() {
-	LibraryHelper::hook("__android_log_write", (void*) __android_log_write);
-	LibraryHelper::hook("_ZN13mediaplatform26DebugLogEnabledForPriorityENS_11LogPriorityE", (void*) logEnabledForPriority);
 	printf("Initialisation des bibliothèques...\n");
 	fflush(stdout);
-	ld_android = LibraryHelper::loadLibrary("lib32/ld-android.so");
-	checkLibrary(ld_android);
-	libdl = LibraryHelper::loadLibrary("lib32/libdl.so");
-	checkLibrary(libdl);
-	libc = LibraryHelper::loadLibrary("lib32/libc.so");
-	checkLibrary(libc);
-	cpp_shared = LibraryHelper::loadLibrary("lib32/libc++_shared.so");
-	checkLibrary(cpp_shared);
-	log = LibraryHelper::loadLibrary("lib32/liblog.so");
-	checkLibrary(log);
-	m = LibraryHelper::loadLibrary("lib32/libm.so");
-	checkLibrary(m);
-	z = LibraryHelper::loadLibrary("lib32/libz.so");
-	checkLibrary(z);
-	android = LibraryHelper::loadLibrary("lib32/libandroid.so");
-	checkLibrary(android);
-	xml2 = LibraryHelper::loadLibrary("lib32/libxml2.so");
-	checkLibrary(xml2);
-	stdcpp = LibraryHelper::loadLibrary("lib32/libstdc++.so");
-	checkLibrary(stdcpp);
-	curl = LibraryHelper::loadLibrary("lib32/libcurl.so");
-	checkLibrary(curl);
-	coreAdi = LibraryHelper::loadLibrary("lib32/libCoreADI.so");
-	checkLibrary(coreAdi);
-	coreLskd = LibraryHelper::loadLibrary("lib32/libCoreLSKD.so");
-	checkLibrary(coreLskd);
-	coreFp = LibraryHelper::loadLibrary("lib32/libCoreFP.so");
-	checkLibrary(coreFp);
-	blocks = LibraryHelper::loadLibrary("lib32/libBlocksRuntime.so");
-	checkLibrary(blocks);
-	dispatch = LibraryHelper::loadLibrary("lib32/libdispatch.so");
-	checkLibrary(dispatch);
-	icudata = LibraryHelper::loadLibrary("lib32/libicudata_sv_apple.so");
-	checkLibrary(icudata);
-	icuuc = LibraryHelper::loadLibrary("lib32/libicuuc_sv_apple.so");
-	checkLibrary(icuuc);
-	icui18n = LibraryHelper::loadLibrary("lib32/libicui18n_sv_apple.so");
-	checkLibrary(icui18n);
-	daapkit = LibraryHelper::loadLibrary("lib32/libdaapkit.so");
-	checkLibrary(daapkit);
-	coreFoundation = LibraryHelper::loadLibrary("lib32/libCoreFoundation.so");
-	checkLibrary(coreFoundation);
-	mediaPlatform = LibraryHelper::loadLibrary("lib32/libmediaplatform.so");
-	checkLibrary(mediaPlatform);
-	storeServicesCore =
-		LibraryHelper::loadLibrary("lib32/libstoreservicescore.so");
-	checkLibrary(storeServicesCore);
-	mediaLibraryCore =
-		LibraryHelper::loadLibrary("lib32/libmedialibrarycore.so");
-	checkLibrary(mediaLibraryCore);
-	openSLES = LibraryHelper::loadLibrary("lib32/libOpenSLES.so");
-	checkLibrary(openSLES);
-	androidAppMusic = LibraryHelper::loadLibrary("lib32/libandroidappmusic.so");
-	checkLibrary(androidAppMusic);
 
 	printf("Les bibliothèques ont été chargé avec succès !\n");
 	fflush(stdout);
 }
 
-void cleanup() {
-	printf("Nettoyage des bibliothèques...\n");
-	fflush(stdout);
-	hybris_dlclose(ld_android);
-	hybris_dlclose(libdl);
-	hybris_dlclose(libc);
-	hybris_dlclose(cpp_shared);
-	hybris_dlclose(log);
-	hybris_dlclose(m);
-	hybris_dlclose(z);
-	hybris_dlclose(android);
-	hybris_dlclose(xml2);
-	hybris_dlclose(stdcpp);
-	hybris_dlclose(curl);
-	hybris_dlclose(coreAdi);
-	hybris_dlclose(coreLskd);
-	hybris_dlclose(coreFp);
-	hybris_dlclose(blocks);
-	hybris_dlclose(dispatch);
-	hybris_dlclose(icudata);
-	hybris_dlclose(icuuc);
-	hybris_dlclose(icui18n);
-	hybris_dlclose(daapkit);
-	hybris_dlclose(coreFoundation);
-	hybris_dlclose(mediaPlatform);
-	hybris_dlclose(storeServicesCore);
-	hybris_dlclose(mediaLibraryCore);
-	hybris_dlclose(openSLES);
-	hybris_dlclose(androidAppMusic);
-	printf("Nettoyage terminé !\n");
-	fflush(stdout);
-}
-
 int main() {
-	initLibs();
+	NativeLibrary::addGlobalHook("__android_log_write",
+								 (void *)__android_log_write);
+	NativeLibrary::addGlobalHook(
+		"_ZN13mediaplatform26DebugLogEnabledForPriorityENS_11LogPriorityE",
+		(void *)logEnabledForPriority);
 
 	printf("Début de la procédure d'approvisionnement...\n");
 	fflush(stdout);
+
+	NativeLibrary libdl("lib-ndk/libdl.so");
+	NativeLibrary libc("lib-ndk/libc.so");
+	NativeLibrary cpp_shared("lib32/libc++_shared.so");
+	NativeLibrary log("lib-ndk/liblog.so");
+	NativeLibrary m("lib-ndk/libm.so");
+	NativeLibrary z("lib-ndk/libz.so");
+	NativeLibrary android("lib-ndk/libandroid.so");
+	NativeLibrary xml2("lib32/libxml2.so");
+	NativeLibrary stdcpp("lib-ndk/libstdc++.so");
+	NativeLibrary curl("lib32/libcurl.so");
+	NativeLibrary coreAdi("lib32/libCoreADI.so");
+	NativeLibrary coreLskd("lib32/libCoreLSKD.so");
+	NativeLibrary coreFp("lib32/libCoreFP.so");
+	NativeLibrary blocks("lib32/libBlocksRuntime.so");
+	NativeLibrary dispatch("lib32/libdispatch.so");
+	NativeLibrary icudata("lib32/libicudata_sv_apple.so");
+	NativeLibrary icuuc("lib32/libicuuc_sv_apple.so");
+	NativeLibrary icui18n("lib32/libicui18n_sv_apple.so");
+	NativeLibrary daapkit("lib32/libdaapkit.so");
+	NativeLibrary coreFoundation("lib32/libCoreFoundation.so");
+	NativeLibrary mediaPlatform("lib32/libmediaplatform.so");
+	NativeLibrary storeServicesCore("lib32/libstoreservicescore.so");
+	NativeLibrary mediaLibraryCore("lib32/libmedialibrarycore.so");
+	NativeLibrary openSLES("lib-ndk/libOpenSLES.so");
+	NativeLibrary androidAppMusic("lib32/libandroidappmusic.so");
 
 	printf(
 		"> Création du contexte des requêtes (objet natif: RequestContext)\n");
 	fflush(stdout);
 	auto RequestContext__ctor =
-		(void (*)(void *self, std::string databasePath))hybris_dlsym(
-			storeServicesCore,
+		(void (*)(void *self, std::string databasePath))storeServicesCore.loadSymbol(
 			"_ZN17storeservicescore14RequestContextC1ERKNSt6__ndk112basic_"
 			"stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE");
 
@@ -220,84 +124,82 @@ int main() {
 	fflush(stdout);
 	{
 		auto setBaseDirectoryPath =
-			(void (*)(void *self, std::string baseDirectoryPath))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig20setBaseDirectory"
-				"PathERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string baseDirectoryPath))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig20setBaseDirectory"
+					"PathERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setBaseDirectoryPath(requestContextConfig, str);
 	}
 	{
 		auto setClientIdentifier =
-			(void (*)(void *self, std::string clientIdentifier))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig19setClientIdentif"
-				"ierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string clientIdentifier))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig19setClientIdentif"
+					"ierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setClientIdentifier(requestContextConfig, "Music"); // Xcode
 	}
 	{
 		auto setVersionIdentifier =
-			(void (*)(void *self, std::string versionIdentifier))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig20setVersionIdenti"
-				"fierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string versionIdentifier))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig20setVersionIdenti"
+					"fierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setVersionIdentifier(requestContextConfig, "4.3"); // 11.2
 	}
 	{
 		auto setPlatformIdentifier =
-			(void (*)(void *self, std::string platformIdentifier))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig21setPlatformIdent"
-				"ifierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string platformIdentifier))
+				storeServicesCore.loadSymbol("_ZN17storeservicescore20RequestContextConfig21setPlatformIdent"
+											 "ifierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+											 "9allocatorIcEEEE");
 		setPlatformIdentifier(requestContextConfig, "Android"); // Linux
 	}
 	{
 		auto setProductVersion =
-			(void (*)(void *self, std::string productVersion))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig17setProductVersio"
-				"nERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string productVersion))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig17setProductVersio"
+					"nERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setProductVersion(requestContextConfig, "10.0.0"); // 5.11.2
 	}
 	{
 		auto setDeviceModel =
-			(void (*)(void *self, std::string deviceModel))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig14setDeviceModelER"
-				"KNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string deviceModel))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig14setDeviceModelER"
+					"KNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setDeviceModel(requestContextConfig,
 					   "Google Pixel 3a"); // HP ProBook 430 G5
 	}
 	{
 		auto setBuildVersion =
-			(void (*)(void *self, std::string buildVersion))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig15setBuildVersionE"
-				"RKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string buildVersion))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig15setBuildVersionE"
+					"RKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setBuildVersion(requestContextConfig, "5803371"); // Android 10	// 0
 	}
 	{
 		auto setLocaleIdentifier =
-			(void (*)(void *self, std::string localeIdentifier))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig19setLocaleIdentif"
-				"ierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string localeIdentifier))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig19setLocaleIdentif"
+					"ierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+					"9allocatorIcEEEE");
 		setLocaleIdentifier(requestContextConfig, "fr_FR"); // fr_FR
 	}
 	{
 		auto setLanguageIdentifier =
-			(void (*)(void *self, std::string languageIdentifier))hybris_dlsym(
-				storeServicesCore,
-				"_ZN17storeservicescore20RequestContextConfig21setLanguageIdent"
-				"ifierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
+			(void (*)(void *self, std::string languageIdentifier))
+				storeServicesCore.loadSymbol("_ZN17storeservicescore20RequestContextConfig21setLanguageIdent"
+											 "ifierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
+											 "9allocatorIcEEEE");
 		setLanguageIdentifier(requestContextConfig, "fr-FR"); // fr-FR
 	}
 	printf("  > Création de la représentation du proxy (objet natif: "
@@ -309,19 +211,17 @@ int main() {
 			unsigned short u = 80;
 			auto HTTPProxy_ctor =
 				(void (*)(void *self, int use_proxy, std::string ip,
-						  unsigned short *port))
-					hybris_dlsym(mediaPlatform,
-								 "_ZN13mediaplatform9HTTPProxyC1ENS0_"
-								 "4TypeERKNSt6__ndk112basic_stringIcNS2_11char_"
-								 "traitsIcEENS2_9allocatorIcEEEERKt");
+						  unsigned short *port))mediaPlatform
+					.loadSymbol("_ZN13mediaplatform9HTTPProxyC1ENS0_"
+								"4TypeERKNSt6__ndk112basic_stringIcNS2_11char_"
+								"traitsIcEENS2_9allocatorIcEEEERKt");
 			(*HTTPProxy_ctor)(&httpProxy, 0, "", &u);
 		}
 		{
-			auto setHTTPProxy =
-				(void (*)(void *self, void *httpProxy))hybris_dlsym(
-					storeServicesCore,
-					"_ZN17storeservicescore20RequestContextConfig12setHTTPProxy"
-					"ERKN13mediaplatform9HTTPProxyE");
+			auto setHTTPProxy = (void (*)(void *self, void *httpProxy))
+									storeServicesCore.loadSymbol(
+										"_ZN17storeservicescore20RequestContextConfig12setHTTPProxy"
+										"ERKN13mediaplatform9HTTPProxyE");
 			setHTTPProxy(requestContextConfig, httpProxy);
 		}
 	}
@@ -330,9 +230,9 @@ int main() {
 	fflush(stdout);
 	{
 		auto setResetHttpCache =
-			(void (*)(void *self, bool resetHttpCache))hybris_dlsym(
-				storeServicesCore, "_ZN17storeservicescore20RequestContextConfi"
-								   "g17setResetHttpCacheEb");
+			(void (*)(void *self, bool resetHttpCache))storeServicesCore
+				.loadSymbol("_ZN17storeservicescore20RequestContextConfi"
+							  "g17setResetHttpCacheEb");
 		setResetHttpCache(
 			requestContextConfig,
 			false); // Valeur par défaut, mais en vrai un true se tente, c'est
@@ -341,17 +241,18 @@ int main() {
 
 	{
 		auto setRequestContextObserver =
-			(void (*)(void *self, std::shared_ptr<void*> requestContextObserver))
-				hybris_dlsym(storeServicesCore,
-							 "_ZN17storeservicescore20RequestContextConfig25set"
-							 "RequestContextObserverERKNSt6__ndk110shared_"
-							 "ptrINS_22RequestContextObserverEEE");
-		void* requestContextObserver;
-
+			(void (*)(void *self,
+					  std::shared_ptr<void *> requestContextObserver))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig25set"
+					"RequestContextObserverERKNSt6__ndk110shared_"
+					"ptrINS_22RequestContextObserverEEE");
+		void *requestContextObserver;
 
 		setRequestContextObserver(
 			requestContextConfig,
-			std::make_shared<void*>(requestContextObserver)); // À revérifier, pas sûr de mon coup.
+			std::make_shared<void *>(
+				requestContextObserver)); // À revérifier, pas sûr de mon coup.
 	}
 
 	printf("  > Création de l'identifiant de l'appareil (objet natif: "
@@ -361,8 +262,8 @@ int main() {
 		const std::string savedGuid = "";
 		{
 			auto FootHill__config =
-				(int (*)(std::string const &savedGuid))hybris_dlsym(
-					androidAppMusic,
+				(int (*)(std::string const &savedGuid))
+					androidAppMusic.loadSymbol(
 					"_ZN14FootHillConfig6configERKNSt6__ndk112basic_"
 					"stringIcNS0_11char_traitsIcEENS0_9allocatorIcEEEE");
 			(*FootHill__config)(savedGuid);
@@ -371,8 +272,7 @@ int main() {
 
 		{
 			auto DeviceGUID__ctor =
-				(std::shared_ptr<void>(*)(void))hybris_dlsym(
-					storeServicesCore,
+				(std::shared_ptr<void>(*)(void))storeServicesCore.loadSymbol(
 					"_ZN17storeservicescore10DeviceGUID8instanceEv");
 			std::string guidstr = "";
 			auto guid = (*DeviceGUID__ctor)();
@@ -381,8 +281,7 @@ int main() {
 				auto DeviceGUID__configure =
 					(void *(*)(std::string const &, void *,
 							   unsigned int const &, bool const &))
-						hybris_dlsym(
-							storeServicesCore,
+						storeServicesCore.loadSymbol(
 							"_ZN17storeservicescore10DeviceGUID9configureERKNSt"
 							"6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
 							"9allocatorIcEEEES9_RKjRKb");
@@ -397,18 +296,18 @@ int main() {
 					androidId, (void *)&savedGuid, 29, true);
 				if (storeErrorCode == 0) {
 					auto DeviceGUID__guid =
-						(std::shared_ptr<void>(*)(void *self))hybris_dlsym(
-							storeServicesCore,
-							"_ZN17storeservicescore10DeviceGUID4guidEv");
+						(std::shared_ptr<void>(*)(void *self))
+							storeServicesCore.loadSymbol(
+								"_ZN17storeservicescore10DeviceGUID4guidEv");
 					auto dataptr = (*DeviceGUID__guid)(guid.get());
 					printf(" %x \n", dataptr.get());
 					fflush(stdout);
 					if (dataptr != NULL) {
 						printf("finalisation... ");
-						auto Data__bytes = (char *(*)(void *self))hybris_dlsym(
-							mediaPlatform, "_ZNK13mediaplatform4Data5bytesEv");
-						auto Data__length = (long (*)(void *self))hybris_dlsym(
-							mediaPlatform, "_ZNK13mediaplatform4Data6lengthEv");
+						auto Data__bytes = (char *(*)(void *self))
+					mediaPlatform.loadSymbol("_ZNK13mediaplatform4Data5bytesEv");
+						auto Data__length = (long (*)(void *self))
+					mediaPlatform.loadSymbol("_ZNK13mediaplatform4Data6lengthEv");
 						auto bytes = Data__bytes(dataptr.get());
 						auto len = Data__length(dataptr.get());
 						std::string guid = byte_2_str(bytes, len);
@@ -417,13 +316,13 @@ int main() {
 					}
 				} else {
 					auto StoreErrorCondition_errorCode =
-						(int (*)(void *const &))hybris_dlsym(
-							storeServicesCore, "_ZNK17storeservicescore19StoreE"
-											   "rrorCondition9errorCodeEv");
+						(int (*)(void *const &))storeServicesCore.loadSymbol(
+							"_ZNK17storeservicescore19StoreE"
+							"rrorCondition9errorCodeEv");
 					auto StoreErrorCondition_errorDescription =
-						(const std::string &(*)(void *))hybris_dlsym(
-							storeServicesCore, "_ZNK17storeservicescore19StoreE"
-											   "rrorCondition4whatEv");
+						(const std::string &(*)(void *))storeServicesCore
+							.loadSymbol("_ZNK17storeservicescore19StoreE"
+										"rrorCondition4whatEv");
 					auto stringDesc =
 						StoreErrorCondition_errorDescription(storeErrorCode);
 					printf("échec. Erreur %d: %s \n",
@@ -449,8 +348,8 @@ int main() {
 		{
 
 			auto filePath_ctor =
-				(void (*)(void *self, std::string databasePath))hybris_dlsym(
-					mediaPlatform,
+				(void (*)(void *self, std::string databasePath))
+					mediaPlatform.loadSymbol(
 					"_ZN13mediaplatform8FilePathC1ERKNSt6__ndk112basic_"
 					"stringIcNS1_11char_traitsIcEENS1_9allocatorIcEEEE");
 
@@ -462,7 +361,7 @@ int main() {
 				auto contentBundle_ctor = (void (*)(void *self, void *, void *,
 													void *,
 													std::vector<std::string> *))
-					hybris_dlsym(mediaPlatform,
+					mediaPlatform.loadSymbol(
 								 "_ZN13mediaplatform13ContentBundleC1ERKNS_"
 								 "8FilePathES3_S3_"
 								 "RKNSt6__ndk16vectorINS4_12basic_stringIcNS4_"
@@ -477,11 +376,11 @@ int main() {
 		{
 			auto setContentBundle =
 				(void (*)(void *self, std::shared_ptr<void *> contentBundle))
-					hybris_dlsym(storeServicesCore,
-								 "_ZN17storeservicescore20RequestContextConfig1"
-								 "6setContentBundle"
-								 "ERKNSt6__ndk110shared_"
-								 "ptrIN13mediaplatform13ContentBundleEEE");
+					storeServicesCore.loadSymbol(
+						"_ZN17storeservicescore20RequestContextConfig1"
+						"6setContentBundle"
+						"ERKNSt6__ndk110shared_"
+						"ptrIN13mediaplatform13ContentBundleEEE");
 			setContentBundle(requestContextConfig,
 							 std::make_shared<void *>(contentBundle));
 		}
@@ -490,26 +389,25 @@ int main() {
 	printf("  > Finalisation de la configuration... \n");
 	fflush(stdout);
 	{
-		auto setFairPlayDirectoryPath = (void (*)(
-			void *self, std::string const &fairPlayDirectoryPath))
-			hybris_dlsym(storeServicesCore,
-						 "_ZN17storeservicescore20RequestContextConfig24setFair"
-						 "PlayDirectoryPathERKNSt6__ndk112basic_stringIcNS1_"
-						 "11char_traitsIcEENS1_9allocatorIcEEEE");
+		auto setFairPlayDirectoryPath =
+			(void (*)(void *self, std::string const &fairPlayDirectoryPath))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore20RequestContextConfig24setFair"
+					"PlayDirectoryPathERKNSt6__ndk112basic_stringIcNS1_"
+					"11char_traitsIcEENS1_9allocatorIcEEEE");
 		setFairPlayDirectoryPath(requestContextConfig,
 								 home + "/.config/hxsign/fairPlay");
 	}
 
 	{
-		auto RequestContext__init = (void (*)(
-			void *self, std::shared_ptr<void *> config))
-			hybris_dlsym(storeServicesCore,
-						 "_ZN17storeservicescore14RequestContext4initERKNSt6__"
-						 "ndk110shared_ptrINS_20RequestContextConfigEEE");
+		auto RequestContext__init =
+			(void (*)(void *self, std::shared_ptr<void *> config))
+				storeServicesCore.loadSymbol(
+					"_ZN17storeservicescore14RequestContext4initERKNSt6__"
+					"ndk110shared_ptrINS_20RequestContextConfigEEE");
 
-		RequestContext__init(context, std::make_shared<void *>(requestContextConfig));
+		RequestContext__init(context,
+							 std::make_shared<void *>(requestContextConfig));
 	}
-
-	cleanup();
 	return 0;
 }
