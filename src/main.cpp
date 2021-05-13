@@ -9,13 +9,14 @@
 #include <LibraryBundle.hpp>
 #include <NativeLibrary.hpp>
 #include <fstream>
+#include <music/storeservicescore/RequestContextConfig.hpp>
 #include <stdlib.h>
 #include <unistd.h>
 
 // https://stackoverflow.com/questions/10723403/char-array-to-hex-string-c
 char const hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-std::string const &byte_2_str(char *bytes, int size) {
+std::string const byte_2_str(char *bytes, int size) {
 	std::string str;
 	for (int i = 0; i < size; ++i) {
 		const char ch = bytes[i];
@@ -73,122 +74,31 @@ int main() {
 	std::ifstream machineIdFile("/etc/machine-id");
 	std::string androidId;
 	std::copy_n(std::istreambuf_iterator<char>(machineIdFile.rdbuf()), 16, std::back_inserter(androidId));
-	char requestContextConfig[0xfff];
 
-	printf(" > Création de sa configuration (objet natif: "
-		   "RequestContextConfig)\n");
+	printf(" > Création de sa configuration (objet natif: RequestContextConfig)\n");
 	fflush(stdout);
-
-	printf("  > Initialisation de champs triviaux\n");
-	fflush(stdout);
-	{
-		auto setBaseDirectoryPath =
-			(void (*)(void *self, std::string baseDirectoryPath))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig20setBaseDirectory"
-				"PathERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setBaseDirectoryPath(requestContextConfig, str);
-	}
-	{
-		auto setClientIdentifier =
-			(void (*)(void *self, std::string clientIdentifier))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig19setClientIdentif"
-				"ierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setClientIdentifier(requestContextConfig, "Music"); // Xcode
-	}
-	{
-		auto setVersionIdentifier =
-			(void (*)(void *self, std::string versionIdentifier))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig20setVersionIdenti"
-				"fierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setVersionIdentifier(requestContextConfig, "4.3"); // 11.2
-	}
-	{
-		auto setPlatformIdentifier =
-			(void (*)(void *self, std::string platformIdentifier))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig21setPlatformIdent"
-				"ifierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setPlatformIdentifier(requestContextConfig, "Android"); // Linux
-	}
-	{
-		auto setProductVersion =
-			(void (*)(void *self, std::string productVersion))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig17setProductVersio"
-				"nERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setProductVersion(requestContextConfig, "10.0.0"); // 5.11.2
-	}
-	{
-		auto setDeviceModel =
-			(void (*)(void *self, std::string deviceModel))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig14setDeviceModelER"
-				"KNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setDeviceModel(requestContextConfig,
-					   "Google Pixel 3a"); // HP ProBook 430 G5
-	}
-	{
-		auto setBuildVersion =
-			(void (*)(void *self, std::string buildVersion))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig15setBuildVersionE"
-				"RKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setBuildVersion(requestContextConfig, "5803371"); // Android 10	// 0
-	}
-	{
-		auto setLocaleIdentifier =
-			(void (*)(void *self, std::string localeIdentifier))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig19setLocaleIdentif"
-				"ierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setLocaleIdentifier(requestContextConfig, "fr_FR"); // fr_FR
-	}
-	{
-		auto setLanguageIdentifier =
-			(void (*)(void *self, std::string languageIdentifier))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig21setLanguageIdent"
-				"ifierERKNSt6__ndk112basic_stringIcNS1_11char_traitsIcEENS1_"
-				"9allocatorIcEEEE");
-		setLanguageIdentifier(requestContextConfig, "fr-FR"); // fr-FR
-	}
-	printf("  > Création de la représentation du proxy (objet natif: "
-		   "HTTPProxy)\n");
-	fflush(stdout);
-	{
-		char httpProxy[20];
-		{
-			unsigned short u = 80;
-			auto HTTPProxy_ctor =
-				(void (*)(void *self, int use_proxy, std::string ip, unsigned short *port))
-					LibraryBundle::mediaPlatform->loadSymbol("_ZN13mediaplatform9HTTPProxyC1ENS0_"
-															 "4TypeERKNSt6__ndk112basic_stringIcNS2_11char_"
-															 "traitsIcEENS2_9allocatorIcEEEERKt");
-			(*HTTPProxy_ctor)(&httpProxy, 0, "", &u);
-		}
-		{
-			auto setHTTPProxy = (void (*)(void *self, void *httpProxy))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfig12setHTTPProxy"
-				"ERKN13mediaplatform9HTTPProxyE");
-			setHTTPProxy(requestContextConfig, httpProxy);
-		}
-	}
+	storeservicescore::RequestContextConfig rcConfig;
 
 	printf("  > Initialisation de champs triviaux\n");
 	fflush(stdout);
-	{
-		auto setResetHttpCache =
-			(void (*)(void *self, bool resetHttpCache))LibraryBundle::storeServicesCore->loadSymbol(
-				"_ZN17storeservicescore20RequestContextConfi"
-				"g17setResetHttpCacheEb");
-		setResetHttpCache(requestContextConfig,
-						  false); // Valeur par défaut, mais en vrai un true se tente, c'est
-								  // géré par les préférences de l'appli.
-	}
+	rcConfig.setBaseDirectoryPath(str);
+	rcConfig.setClientIdentifier("Music"); // Xcode
+	rcConfig.setVersionIdentifier("4.3"); // 11.2
+	rcConfig.setPlatformIdentifier("Android"); // Linux
+	rcConfig.setProductVersion("10.0.0"); // 5.11.2
+	rcConfig.setDeviceModel("Google Pixel 3a"); // HP ProBook 430 G5
+	rcConfig.setBuildVersion("5803371"); // Android 10	// 0
+	rcConfig.setLocaleIdentifier("fr_FR"); // fr_FR
+	rcConfig.setLanguageIdentifier("fr-FR"); // fr-FR
 
-	{
+	mediaplatform::HTTPProxy proxy(0, "", 80);
+	rcConfig.setHTTPProxy(proxy);
+	rcConfig.setResetHttpCache(false); // Valeur par défaut, mais en vrai un true se tente
+
+	androidstoreservices::AndroidRequestContextObserver rcObserver;
+	rcConfig.setRequestContextObserver(rcObserver);
+
+	/*{
 		auto setRequestContextObserver = (void (*)(void *self, std::shared_ptr<void *> requestContextObserver))
 											 LibraryBundle::storeServicesCore->loadSymbol(
 												 "_ZN17storeservicescore20RequestContextConfig25set"
@@ -197,7 +107,7 @@ int main() {
 		void *requestContextObserver;
 
 		setRequestContextObserver(
-			requestContextConfig,
+			rcConfig,
 			std::make_shared<void *>(requestContextObserver)); // À revérifier, pas sûr de mon coup.
 	}
 
@@ -306,7 +216,7 @@ int main() {
 											"6setContentBundle"
 											"ERKNSt6__ndk110shared_"
 											"ptrIN13mediaplatform13ContentBundleEEE");
-			setContentBundle(requestContextConfig, std::make_shared<void *>(contentBundle));
+			setContentBundle(rcConfig, std::make_shared<void *>(contentBundle));
 		}
 	}
 
@@ -318,7 +228,7 @@ int main() {
 												"_ZN17storeservicescore20RequestContextConfig24setFair"
 												"PlayDirectoryPathERKNSt6__ndk112basic_stringIcNS1_"
 												"11char_traitsIcEENS1_9allocatorIcEEEE");
-		setFairPlayDirectoryPath(requestContextConfig, home + "/.config/hxsign/fairPlay");
+		setFairPlayDirectoryPath(rcConfig, home + "/.config/hxsign/fairPlay");
 	}
 
 	{
@@ -327,7 +237,7 @@ int main() {
 				"_ZN17storeservicescore14RequestContext4initERKNSt6__"
 				"ndk110shared_ptrINS_20RequestContextConfigEEE");
 
-		RequestContext__init(context, std::make_shared<void *>(requestContextConfig));
-	}
+		RequestContext__init(context, std::make_shared<void *>(rcConfig));
+	}*/
 	return 0;
 }
